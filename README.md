@@ -9,3 +9,23 @@ Sentimental analysis for YouTube comments
 - [ ] Sync thru Zoom every week
 
 # Weekly milestones (starting from Nov.1st)
+
+## Youtube public data APIs (Week 11, Nov.2nd to Nov.8th)
+- [ ] Implement download comments from specific Youtube videos
+- [ ] Preprocessing and data cleaning (nulls check, emoji etc.)
+- [ ] Normalize the comments
+
+This part is going to be implemented by:
+
+## Bert Model Training and fine-tuning (Week 12-13, Nov.9th - Nov.24th)
+- [ ] Feed the data into the model, compare the output with groundtruth
+- [ ] Fine-tune parameters (Are we doing binary classification here? i.e. 1 for positive emotion and -1 for negative?)
+- [ ] Results explanation and investigation
+
+This part is going to be implemented by: 
+
+## Project report composition and slides (Along with previous milestones)
+- [ ] Write the complete report
+- [ ] Design slides
+
+This part is going to be implemented by: 
