@@ -15,7 +15,7 @@ Sentimental analysis for YouTube comments
 - [ ] Preprocessing and data cleaning (nulls check, emoji etc.)
 - [ ] Normalize the comments
 
-This part is going to be implemented by:
+This part is going to be implemented by: **Chenhui Wang**
 
 ## Bert Model Training and fine-tuning (Week 12-13, Nov.9th - Nov.24th)
 - [ ] Feed the data into the model, compare the output with groundtruth
