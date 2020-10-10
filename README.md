@@ -18,28 +18,28 @@ I've finished developing download comments from Youtube. Please see [downloader.
 
 ### Installation
 TL;DR: just simply install **requirements.txt**
-> pip install requirements.txt
+```pip install requirements.txt```
 
 Prerequisites:
 - Python Version >= 3.7
 - pip
-- The Google APIs Client Library for Python:
-> pip install --upgrade google-api-python-client
-- The google-auth, google-auth-oauthlib, and google-auth-httplib2 for user authorization
-> pip install --upgrade google-auth google-auth-oauthlib google-auth-httplib2
-- Requests
-> pip install requests
-- lxml
-> pip install lxml
-- cssselect
-> pip install cssselect
+- The Google APIs Client Library for Python:  
+```pip install --upgrade google-api-python-client```
+- The google-auth, google-auth-oauthlib, and google-auth-httplib2 for user authorization  
+```pip install --upgrade google-auth google-auth-oauthlib google-auth-httplib2```
+- Requests  
+```pip install requests```
+- lxml  
+```pip install lxml```
+- cssselect  
+```pip install cssselect```
 
 
 Resources:
-> Google official Python API client repository:
+Google official Python API client repository:
 > [https://github.com/googleapis/google-api-python-client](https://github.com/googleapis/google-api-python-client)
 
-> YouTube Python API:
+YouTube Python API:
 > [https://github.com/youtube/api-samples/tree/master/python](https://github.com/youtube/api-samples/tree/master/python)
 
 
