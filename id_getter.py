@@ -62,18 +62,18 @@ def get_specific_comments(client, parent_id):
     return comments["items"]
 
 
-def youtube_search(options):
+def youtube_search(options, service_name, api_version, developerKey):
     """ Search video ids based on keywords list provided
     Args:
         options: An instance of ArgParse(). Used for specifing certain parameters
     Returns:
         Queue: a simple queue containing video ids based on options.q search results
     """
-    client = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=DEVELOPER_KEY)
+    client = build(service_name, api_version, developerKey=developerKey)
     http_response = client.search().list(
         q=options.q,
         part='id,snippet',
-        maxResults=options.max_results
+        maxResults=options.maxresults
     ).execute()
     
     video_ids = queue.Queue()
@@ -81,7 +81,8 @@ def youtube_search(options):
     for search_result in http_response.get('items', []):
         if search_result['id']['kind'] == 'youtube#video':
             video_ids.put('%s' % (search_result['id']['videoId']))
-    
+    if video_ids.empty():
+        print("ERROR!!!!!!EMPTY RESULT")
     return video_ids
 
 
