@@ -9,21 +9,37 @@ import time
 import argparse
 import lxml.html
 import requests
+import queue
+import google_auth_oauthlib.flow
+
 from lxml.cssselect import CSSSelector
+
+from googleapiclient.discovery import build
+from googleapiclient.discovery import build_from_document
+from googleapiclient.errors import HttpError
+from google_auth_oauthlib.flow import InstalledAppFlow
 
 YOUTUBE_VIDEO_URL = 'https://www.youtube.com/watch?v={youtube_id}'
 YOUTUBE_COMMENTS_AJAX_URL_OLD = 'https://www.youtube.com/comment_ajax'
 YOUTUBE_COMMENTS_AJAX_URL_NEW = 'https://www.youtube.com/comment_service_ajax'
 
+# AIzaSyBE5tvxahwBu3Z3y2R2lVrY11pNfQLOcIA, this is my API key. Please replace it with yours
+# download it from your google developer console: https://cloud.google.com/console under tab of API Keys
+DEVELOPER_KEY = "AIzaSyBE5tvxahwBu3Z3y2R2lVrY11pNfQLOcIA"
+
+YOUTUBE_API_SERVICE_NAME = 'youtube'
+YOUTUBE_API_VERSION = "v3"
+
+# Http header
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36'
 
-
+# find a specific value in HTML entities
 def find_value(html, key, num_chars=2, separator='"'):
     pos_begin = html.find(key) + len(key) + num_chars
     pos_end = html.find(separator, pos_begin)
     return html[pos_begin: pos_end]
 
-
+# simple request
 def ajax_request(session, url, params=None, data=None, headers=None, retries=5, sleep=20):
     for _ in range(retries):
         response = session.post(url, params=params, data=data, headers=headers)
@@ -34,7 +50,8 @@ def ajax_request(session, url, params=None, data=None, headers=None, retries=5, 
         else:
             time.sleep(sleep)
 
-
+# use new api to download live stream
+# else use old api
 def download_comments(youtube_id, sleep=.1):
     if r'\"isLiveContent\":true' in requests.get(YOUTUBE_VIDEO_URL.format(youtube_id=youtube_id)).text:
         print('Live stream detected! Not all comments may be downloaded.')
@@ -180,26 +197,15 @@ def download_comments_old_api(youtube_id, sleep=1):
                 yield comment
         time.sleep(sleep)
 
-
+# use lxml parser to extract comments from html tree
 def extract_comments(html):
     tree = lxml.html.fromstring(html)
     item_sel = CSSSelector('.comment-item')
     text_sel = CSSSelector('.comment-text-content')
-    time_sel = CSSSelector('.time')
-    author_sel = CSSSelector('.user-name')
-    vote_sel = CSSSelector('.like-count.off')
-    photo_sel = CSSSelector('.user-photo')
-    heart_sel = CSSSelector('.creator-heart-background-hearted')
 
     for item in item_sel(tree):
         yield {'cid': item.get('data-cid'),
-               'text': text_sel(item)[0].text_content(),
-               'time': time_sel(item)[0].text_content().strip(),
-               'author': author_sel(item)[0].text_content(),
-               'channel': item[0].get('href').replace('/channel/','').strip(),
-               'votes': vote_sel(item)[0].text_content() if len(vote_sel(item)) > 0 else 0,
-               'photo': photo_sel(item)[0].get('src'),
-               'heart': bool(heart_sel(item))}
+               'text': text_sel(item)[0].text_content()}
 
 
 def extract_reply_cids(html):
@@ -210,7 +216,6 @@ def extract_reply_cids(html):
 
 def main(argv):
     parser = argparse.ArgumentParser(add_help=False, description=('Download Youtube comments without using the Youtube API'))
-    parser.add_argument('--help', '-h', action='help', default=argparse.SUPPRESS, help='Show this help message and exit')
     parser.add_argument('--youtubeid', '-y', help='ID of Youtube video for which to download the comments')
     parser.add_argument('--output', '-o', help='Output filename (output format is line delimited JSON)')
     parser.add_argument('--limit', '-l', type=int, help='Limit the number of comments')

@@ -85,28 +85,28 @@ def youtube_search(options):
     return video_ids
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--q', help='Search term', default='Google')
-    parser.add_argument('--max-results', help='Max results', default=25)
-    args = parser.parse_args()
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('--q', help='Search term', default='Google')
+#     parser.add_argument('--max-results', help='Max results', default=25)
+#     args = parser.parse_args()
     
-    try:
-        video_ids = youtube_search(args)
-        comments = []
-        # print(video_ids)
+#     try:
+#         video_ids = youtube_search(args)
+#         comments = []
+#         # print(video_ids)
         
-        client = build_register_client()
-        print("####################### Client built successful #######################")
-        while not video_ids.empty():
-            id = video_ids.get()
-            print("ID: {}".format(id))
-            comment_threads = get_comment_threads(client, id)
-            print("Comment threads are \n")
-            print(comment_threads)
-            comments.append(get_specific_comments(client, comment_threads[0]["id"]))
+#         client = build_register_client()
+#         print("####################### Client built successful #######################")
+#         while not video_ids.empty():
+#             id = video_ids.get()
+#             print("ID: {}".format(id))
+#             comment_threads = get_comment_threads(client, id)
+#             print("Comment threads are \n")
+#             print(comment_threads)
+#             comments.append(get_specific_comments(client, comment_threads[0]["id"]))
             
-        print("Total comments are {}".format(len(comments)))
-        print(comments[:5])
-    except HttpError:
-        print("Http Request Error")
+#         print("Total comments are {}".format(len(comments)))
+#         print(comments[:5])
+#     except HttpError:
+#         print("Http Request Error")
