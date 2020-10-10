@@ -13,13 +13,14 @@ Sentimental analysis for YouTube comments
 ## Youtube public data APIs (Week 11, Nov.2nd to Nov.8th)
 - [ ] Implement download comments from specific Youtube videos
 - [ ] Preprocessing and data cleaning (nulls check, emoji etc.)
-- [ ] Normalize the comments
 
 Google official Python API client repository:
 > [https://github.com/googleapis/google-api-python-client](https://github.com/googleapis/google-api-python-client)
 
 YouTube Python API:
 > [https://github.com/youtube/api-samples/tree/master/python](https://github.com/youtube/api-samples/tree/master/python)
+
+
 
 ## Bert Model Training and fine-tuning (Week 12-13, Nov.9th - Nov.24th)
 - [ ] Feed the data into the model, compare the output with groundtruth
