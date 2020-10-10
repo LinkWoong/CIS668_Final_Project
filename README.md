@@ -16,6 +16,13 @@ Sentimental analysis for YouTube comments
 I've finished developing download comments from Youtube. Please see [downloader.py](https://github.com/LinkWoong/CIS668_Final_Project/blob/main/downloader.py) for details. Below is the working principle of this youtube comment downloader.py.
 ![Architecture](https://github.com/LinkWoong/CIS668_Final_Project/blob/main/img/architecture.png)
 
+Sample output
+![Architecture](https://github.com/LinkWoong/CIS668_Final_Project/blob/main/img/sample.png)
+
+### Usage
+```python downloader.py --output <output-path> --q <query-word> --maxresults <max-num-of-videos>```
+Example:
+```python downloader.py --output res.json --q amazonglacier --maxresults 2```
 ### Installation
 TL;DR: just simply install **requirements.txt**
 ```pip install requirements.txt```
