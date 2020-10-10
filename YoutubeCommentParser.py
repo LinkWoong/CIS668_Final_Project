@@ -37,9 +37,17 @@ def youtube_search(options):
         elif search_result['id']['kind'] == 'youtube#playlist':
             playlists.append('%s (%s)' % (search_result['snippet']['title'], search_result['id']['playlistId']))
     
-    print("Videos:\n".join(videos))
-    print("Channels:\n".join(channels))
-    print("Playlists:\n".join(playlists))
+    print("Videos:\n")
+    print("\n".join(videos))
+    print("\n")
+    
+    print("Channels:\n")
+    print("\n".join(channels))
+    print("\n")
+    
+    print("Playlists:\n")
+    print("\n".join(playlists))
+    print("\n")
 
 
 if __name__ == "__main__":
