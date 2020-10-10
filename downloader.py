@@ -19,6 +19,8 @@ from googleapiclient.discovery import build_from_document
 from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 
+from id_getter import youtube_search
+
 YOUTUBE_VIDEO_URL = 'https://www.youtube.com/watch?v={youtube_id}'
 YOUTUBE_COMMENTS_AJAX_URL_OLD = 'https://www.youtube.com/comment_ajax'
 YOUTUBE_COMMENTS_AJAX_URL_NEW = 'https://www.youtube.com/comment_service_ajax'
@@ -209,10 +211,12 @@ def extract_reply_cids(html):
 
 def main(argv):
     parser = argparse.ArgumentParser(add_help=False, description=('Download Youtube comments without using the Youtube API'))
-    parser.add_argument('--youtubeid', '-y', help='ID of Youtube video for which to download the comments')
+    # parser.add_argument('--youtubeid', '-y', help='ID of Youtube video for which to download the comments')
     parser.add_argument('--output', '-o', help='Output filename (output format is line delimited JSON)')
-    parser.add_argument('--limit', '-l', type=int, help='Limit the number of comments')
-    parser.add_argument('--search', '-s', help='Keyword to search, now only accept one word.')
+    # parser.add_argument('--limit', '-l', type=int, help='Limit the number of comments')
+    parser.add_argument('--q', '-q', help='Keyword to search, now only accept one word.')
+    parser.add_argument('--maxresults', '-m', help='Maximum query result for a keyword', default=25)
+    
     # TODO: read a list containing all words needed instead of read one by one
     
     # example output: <K, V> pair -> cid : comment
@@ -225,61 +229,57 @@ def main(argv):
 
     try:
         args = parser.parse_args(argv)
-
-        youtube_id = args.youtubeid
         output = args.output
-        limit = args.limit
-        search = args.search
-
-        if not youtube_id or not output:
-            parser.print_usage()
-            raise ValueError('you need to specify a Youtube ID and an output filename')
-
-        if os.sep in output:
-            outdir = os.path.dirname(output)
-            if not os.path.exists(outdir):
-                os.makedirs(outdir)
-
-        print('Downloading Youtube comments for video:', youtube_id)
-        count = 0
         
-        sys.stdout.write('Downloaded %d comment(s)\r' % count)
-        sys.stdout.flush()
-        start_time = time.time()
-        
+        video_ids = youtube_search(args, YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, DEVELOPER_KEY)
         inc = 0
         
-        for comment in download_comments(youtube_id):
-            comment_json = json.dumps(comment, ensure_ascii=False)
-            if isinstance(comment_json, bytes):
-                comment_json = comment_json.decode('utf-8')
-            # print(comment_json)
-            # {"cid": "UgyNfVDpgesamWyWT794AaABAg", "text": "the irony is that this video is stored in google cloud platform"}
-            comment_json = json.loads(comment_json)
-            if inc != 0:
-                with open(output) as fp:
-                    data = json.load(fp)
-                data.update({comment_json["cid"]: comment_json["text"]})
+        while not video_ids.empty():
+            youtube_id = video_ids.get()
+            if not youtube_id or not output:
+                parser.print_usage()
+                raise ValueError('you need to specify a Youtube ID and an output filename')
 
-                with open(output, "w", encoding='utf-8') as fp:
-                    json.dump(data, fp, ensure_ascii=False, indent=4)
-            else:
-                with open(output, "w", encoding='utf-8') as fp:
-                    # print(comment_json.decode('utf-8') if isinstance(comment_json, bytes) else comment_json, file=fp)
-                    json.dump({comment_json["cid"]: comment_json["text"]}, fp, ensure_ascii=False, indent=4)
-            inc += 1
-            count += 1
+            if os.sep in output:
+                outdir = os.path.dirname(output)
+                if not os.path.exists(outdir):
+                    os.makedirs(outdir)
+    
+            print('Downloading Youtube comments for video:', youtube_id)
+            count = 0
+            
             sys.stdout.write('Downloaded %d comment(s)\r' % count)
             sys.stdout.flush()
-            if limit and count >= limit:
-                break
+            start_time = time.time()
             
-        print('\n[{:.2f} seconds] Done!'.format(time.time() - start_time))
+            for comment in download_comments(youtube_id):
+                comment_json = json.dumps(comment, ensure_ascii=False)
+                if isinstance(comment_json, bytes):
+                    comment_json = comment_json.decode('utf-8')
+                # print(comment_json)
+                # {"cid": "UgyNfVDpgesamWyWT794AaABAg", "text": "the irony is that this video is stored in google cloud platform"}
+                comment_json = json.loads(comment_json)
+                if inc != 0:
+                    with open(output) as fp:
+                        data = json.load(fp)
+                    data.update({comment_json["cid"]: comment_json["text"]})
+    
+                    with open(output, "w", encoding='utf-8') as fp:
+                        json.dump(data, fp, ensure_ascii=False, indent=4)
+                else:
+                    with open(output, "w", encoding='utf-8') as fp:
+                        # print(comment_json.decode('utf-8') if isinstance(comment_json, bytes) else comment_json, file=fp)
+                        json.dump({comment_json["cid"]: comment_json["text"]}, fp, ensure_ascii=False, indent=4)
+                inc += 1
+                count += 1
+                sys.stdout.write('Downloaded %d comment(s)\r' % count)
+                sys.stdout.flush()
+                
+            print('\n[{:.2f} seconds] Done!'.format(time.time() - start_time))
 
     except Exception as e:
         print('Error:', str(e))
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])
