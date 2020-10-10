@@ -39,7 +39,7 @@ def find_value(html, key, num_chars=2, separator='"'):
     pos_end = html.find(separator, pos_begin)
     return html[pos_begin: pos_end]
 
-# simple request
+# simple HTTP GET request with retries, each retry has 20 seconds separation
 def ajax_request(session, url, params=None, data=None, headers=None, retries=5, sleep=20):
     for _ in range(retries):
         response = session.post(url, params=params, data=data, headers=headers)
@@ -57,7 +57,6 @@ def download_comments(youtube_id, sleep=.1):
         print('Live stream detected! Not all comments may be downloaded.')
         return download_comments_new_api(youtube_id, sleep)
     return download_comments_old_api(youtube_id, sleep)
-
 
 def download_comments_new_api(youtube_id, sleep=1):
     # Use the new youtube API to download some comments
@@ -106,7 +105,7 @@ def download_comments_new_api(youtube_id, sleep=1):
                    'photo': comment['authorThumbnail']['thumbnails'][-1]['url'],
                    'heart': next(search_dict(comment, 'isHearted'), False)}
 
-        time.sleep(sleep)
+        time.sleep(sleep) # sleep for a given time period so we don't get blocked by Google :)
 
 
 def search_dict(partial, key):
@@ -219,6 +218,8 @@ def main(argv):
     parser.add_argument('--youtubeid', '-y', help='ID of Youtube video for which to download the comments')
     parser.add_argument('--output', '-o', help='Output filename (output format is line delimited JSON)')
     parser.add_argument('--limit', '-l', type=int, help='Limit the number of comments')
+    parser.add_argument('--search', '-s', help='Keyword to search, now only accept one word.')
+    # TODO: read a list containing all words needed instead of read one by one
 
     try:
         args = parser.parse_args(argv)
@@ -226,6 +227,7 @@ def main(argv):
         youtube_id = args.youtubeid
         output = args.output
         limit = args.limit
+        search = args.search
 
         if not youtube_id or not output:
             parser.print_usage()
