@@ -23,7 +23,7 @@ def build_register_client():
     Register app with credentials from client_secret.json. REQUIRED
     """
     flow = InstalledAppFlow.from_client_secrets_file(client_secrets_file=CLIENT_SECRET_FILE, scopes=SCOPES)
-    credentails = flow.run_console()
+    credentails = flow.run_local_server()
     return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, credentials=credentails)
 
 def get_comment_threads(client, video_id):
@@ -101,12 +101,6 @@ def youtube_search(options):
 #         while not video_ids.empty():
 #             id = video_ids.get()
 #             print("ID: {}".format(id))
-#             comment_threads = get_comment_threads(client, id)
-#             print("Comment threads are \n")
-#             print(comment_threads)
-#             comments.append(get_specific_comments(client, comment_threads[0]["id"]))
-            
-#         print("Total comments are {}".format(len(comments)))
-#         print(comments[:5])
+
 #     except HttpError:
 #         print("Http Request Error")
