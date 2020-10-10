@@ -97,13 +97,7 @@ def download_comments_new_api(youtube_id, sleep=1):
 
         for comment in search_dict(response, 'commentRenderer'):
             yield {'cid': comment['commentId'],
-                   'text': ''.join([c['text'] for c in comment['contentText']['runs']]),
-                   'time': comment['publishedTimeText']['runs'][0]['text'],
-                   'author': comment.get('authorText', {}).get('simpleText', ''),
-                   'channel': comment['authorEndpoint']['browseEndpoint']['browseId'],
-                   'votes': comment.get('voteCount', {}).get('simpleText', '0'),
-                   'photo': comment['authorThumbnail']['thumbnails'][-1]['url'],
-                   'heart': next(search_dict(comment, 'isHearted'), False)}
+                   'text': ''.join([c['text'] for c in comment['contentText']['runs']])}
 
         time.sleep(sleep) # sleep for a given time period so we don't get blocked by Google :)
 
@@ -220,6 +214,14 @@ def main(argv):
     parser.add_argument('--limit', '-l', type=int, help='Limit the number of comments')
     parser.add_argument('--search', '-s', help='Keyword to search, now only accept one word.')
     # TODO: read a list containing all words needed instead of read one by one
+    
+    # example output: <K, V> pair -> cid : comment
+    # {
+    #     "UgyNfVDpgesamWyWT794AaABAg": "the irony is that this video is stored in google cloud platform",
+    #     "UghZPYxpAU6oT3gCoAEC": "Ouch, high frequency tones used for digital bit flow sound effect. Use lower tones...",
+    #     "UghZPYxpAU6oT3gCoAEC.8OrRc3r3vFl8W71TLv2WSz": "nerd",
+    #     "UgjO0PNK_Y2nMngCoAEC": "That's awesome. People with money who want to help people are the best"
+    # }
 
     try:
         args = parser.parse_args(argv)
@@ -240,18 +242,38 @@ def main(argv):
 
         print('Downloading Youtube comments for video:', youtube_id)
         count = 0
-        with io.open(output, 'w', encoding='utf8') as fp:
+        
+        sys.stdout.write('Downloaded %d comment(s)\r' % count)
+        sys.stdout.flush()
+        start_time = time.time()
+        
+        inc = 0
+        
+        for comment in download_comments(youtube_id):
+            comment_json = json.dumps(comment, ensure_ascii=False)
+            if isinstance(comment_json, bytes):
+                comment_json = comment_json.decode('utf-8')
+            # print(comment_json)
+            # {"cid": "UgyNfVDpgesamWyWT794AaABAg", "text": "the irony is that this video is stored in google cloud platform"}
+            comment_json = json.loads(comment_json)
+            if inc != 0:
+                with open(output) as fp:
+                    data = json.load(fp)
+                data.update({comment_json["cid"]: comment_json["text"]})
+
+                with open(output, "w", encoding='utf-8') as fp:
+                    json.dump(data, fp, ensure_ascii=False, indent=4)
+            else:
+                with open(output, "w", encoding='utf-8') as fp:
+                    # print(comment_json.decode('utf-8') if isinstance(comment_json, bytes) else comment_json, file=fp)
+                    json.dump({comment_json["cid"]: comment_json["text"]}, fp, ensure_ascii=False, indent=4)
+            inc += 1
+            count += 1
             sys.stdout.write('Downloaded %d comment(s)\r' % count)
             sys.stdout.flush()
-            start_time = time.time()
-            for comment in download_comments(youtube_id):
-                comment_json = json.dumps(comment, ensure_ascii=False)
-                print(comment_json.decode('utf-8') if isinstance(comment_json, bytes) else comment_json, file=fp)
-                count += 1
-                sys.stdout.write('Downloaded %d comment(s)\r' % count)
-                sys.stdout.flush()
-                if limit and count >= limit:
-                    break
+            if limit and count >= limit:
+                break
+            
         print('\n[{:.2f} seconds] Done!'.format(time.time() - start_time))
 
     except Exception as e:
