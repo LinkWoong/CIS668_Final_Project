@@ -263,7 +263,7 @@ def main(argv):
                     with open(output) as fp:
                         data = json.load(fp)
                     data.update({comment_json["cid"]: comment_json["text"]})
-    
+
                     with open(output, "w", encoding='utf-8') as fp:
                         json.dump(data, fp, ensure_ascii=False, indent=4)
                 else:
